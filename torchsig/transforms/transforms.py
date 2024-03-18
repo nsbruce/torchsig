@@ -12,7 +12,6 @@ from torchsig.transforms.functional import (
     NumericParameter,
     to_distribution,
     uniform_continuous_distribution,
-    uniform_discrete_distribution,
 )
 from torchsig.utils.dataset import SignalDataset
 from torchsig.utils.types import SignalData, SignalDescription
@@ -1008,8 +1007,7 @@ class TimeVaryingNoise(SignalTransform):
             )
 
             # Update SignalDescription with average of added noise (Note: this is merely an approximation)
-            new_signal_description: List[SignalDescription] = []
-            signal_description_list: List[SignalDescription] = (
+            new_signal_description: List[SignalDescription] = (
                 [data.signal_description]
                 if isinstance(data.signal_description, SignalDescription)
                 else data.signal_description
