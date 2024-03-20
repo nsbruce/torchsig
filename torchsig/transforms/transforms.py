@@ -1007,7 +1007,8 @@ class TimeVaryingNoise(SignalTransform):
             )
 
             # Update SignalDescription with average of added noise (Note: this is merely an approximation)
-            new_signal_description: List[SignalDescription] = (
+            new_signal_description: List[SignalDescription] = []
+            signal_description_list: List[SignalDescription] = (
                 [data.signal_description]
                 if isinstance(data.signal_description, SignalDescription)
                 else data.signal_description
@@ -1016,7 +1017,7 @@ class TimeVaryingNoise(SignalTransform):
             avg_noise_power_db = (
                 min(noise_power_db_low, noise_power_db_high) + noise_power_db_change / 2
             )
-            for signal_desc in new_signal_description:
+            for signal_desc in signal_description_list:
                 new_signal_desc = deepcopy(signal_desc)
                 assert new_signal_desc.snr is not None
                 new_signal_desc.snr -= avg_noise_power_db
