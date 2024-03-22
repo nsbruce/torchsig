@@ -88,7 +88,7 @@ class Sig53:
 
         self.path = self.root / cfg.name
         self.env = lmdb.Environment(
-            str(self.path).encode(), map_size=int(1e12), max_dbs=2, lock=False
+            str(self.path).encode(), map_size=int(2e12), max_dbs=2, lock=False
         )
         self.data_db = self.env.open_db(b"data")
         self.label_db = self.env.open_db(b"label")
