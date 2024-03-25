@@ -120,9 +120,14 @@ class Sig53:
                 signal_description=[signal_desc],
             )
             data = self.T(data)  # type: ignore
-            target = self.TT(data.signal_description)  # type: ignore
-            assert data.iq_data is not None
-            sig_iq_data: np.ndarray = data.iq_data
+            if type(data) is list:
+                target = [self.TT(d.signal_description) for d in data] 
+                assert all(d.iq_data is not None for d in data)
+                sig_iq_data = np.array([d.iq_data for d in data])
+            else:
+                target = self.TT(data.signal_description)  # type: ignore
+                assert data.iq_data is not None
+                sig_iq_data: np.ndarray = data.iq_data
             return sig_iq_data, target
 
         np_data: np.ndarray = self.T(iq_data)  # type: ignore
