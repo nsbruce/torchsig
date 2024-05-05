@@ -192,18 +192,34 @@ sig53_clean_val = Sig53(
 class SimCLR(LightningModule):
     def __init__(self, hidden_dim, lr, temperature, weight_decay, max_epochs=500):
         super().__init__()
-        self.save_hyperparameters()
+        self.save_hyperparameters(ignore=['model'])
         assert self.hparams.temperature > 0.0, "The temperature must be a positive float!"
         # Base model f(.)
-        self.convnet = resnet18(
-            pretrained=False, num_classes=4 * hidden_dim
-        )  # num_classes is the output size of the last linear layer
+        # self.convnet = resnet18(
+        #     pretrained=False, num_classes=4 * hidden_dim
+        # )  # num_classes is the output size of the last linear layer
+        self.convnet = efficientnet_b4(pretrained=True, path="/data/torchsig-pretrained-models/sig53/efficientnet_b4_online.pt")
         # The MLP for g(.) consists of Linear->ReLU->Linear
-        self.convnet.fc = nn.Sequential(
-            self.convnet.fc,  # Linear(ResNet output, 4*hidden_dim)
+        # self.convnet.fc = nn.Sequential(
+        #     self.convnet.fc,  # Linear(ResNet output, 4*hidden_dim)
+        #     nn.ReLU(inplace=True),
+        #     nn.Linear(4 * hidden_dim, hidden_dim),
+        # )
+        # I think this is equivalent
+        self.convnet.classifier = nn.Sequential(
+            self.convnet.classifier,
             nn.ReLU(inplace=True),
-            nn.Linear(4 * hidden_dim, hidden_dim),
+            nn.Linear(53 * hidden_dim, hidden_dim),
         )
+        self.convnet = self.convnet.to(device)
+
+    def forward(self, x):
+        return self.convnet(x)
+
+    def predict(self, x):
+        with torch.no_grad():
+            out = self.forward(x)
+        return out
 
     def configure_optimizers(self):
         optimizer = optim.AdamW(self.parameters(), lr=self.hparams.lr, weight_decay=self.hparams.weight_decay)
@@ -214,15 +230,6 @@ class SimCLR(LightningModule):
 
     def info_nce_loss(self, batch: list[Tensor, list[Tensor]], mode="train"):
         sigs, _ = batch
-        # print("DEBUGGING", imgs.shape, type(imgs))
-        # this interleaves the samples to be r1 i1 r2 i2 for each signal
-        # sigs = torch.cat(sigs.split(1,dim=2), dim=1).view(sigs.shape[0],-1).float()
-        print("DEBUGGING", sigs.shape, sigs.dtype, sigs[0,:,:10])
-
-        # t=torch.from_numpy(np.vectorize(lambda x: complex(x,x+25))(np.arange(2*3*4)).reshape((3,2,4)))
-        sigs = torch.stack((torch.real(sigs), torch.imag(sigs)), dim=2)
-        
-        # sigs = torch.cat(sigs, dim=0)
 
         # Encode all images
         feats = self.convnet(sigs)
@@ -257,7 +264,7 @@ class SimCLR(LightningModule):
         return self.info_nce_loss(batch, mode="train")
 
     def validation_step(self, batch, batch_idx):
-        self.info_nce_loss(batch, mode="val")
+        return self.info_nce_loss(batch, mode="val")
 
 
 CHECKPOINT_PATH = "/workspaces/torchsig/nick-playing/saved_models/"
@@ -267,6 +274,7 @@ def train_simclr(batch_size, max_epochs=500, **kwargs):
         default_root_dir=os.path.join(CHECKPOINT_PATH, "SimCLR"),
         # gpus=1 if str(device) == "cuda:0" else 0,
         devices=-1,
+        accelerator="gpu",
         max_epochs=max_epochs,
         callbacks=[
             ModelCheckpoint(save_weights_only=True, mode="max", monitor="val_acc_top5"),
@@ -288,7 +296,7 @@ def train_simclr(batch_size, max_epochs=500, **kwargs):
             batch_size=batch_size,
             shuffle=True,
             drop_last=True,
-            pin_memory=True,
+            # pin_memory=True,
             num_workers=num_workers,
         )
         val_loader = DataLoader(
@@ -296,7 +304,7 @@ def train_simclr(batch_size, max_epochs=500, **kwargs):
             batch_size=batch_size,
             shuffle=False,
             drop_last=False,
-            pin_memory=True,
+            # pin_memory=True,
             num_workers=num_workers,
         )
         seed_everything(42)  # To be reproducable
