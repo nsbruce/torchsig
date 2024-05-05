@@ -1,7 +1,7 @@
 {
     "name": "${localWorkspaceFolderBasename}",
     "image": "pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime",
-    "runArgs": ["--gpus", "all", "--shm-size","8gb"],
+    "runArgs": ["--gpus", "all", "--shm-size","128gb"],
     "remoteUser": "root",
     "mounts" :[
         "source=/rfi-data/,target=/data,type=bind,consistency=cached"
