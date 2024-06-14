@@ -17,7 +17,7 @@ import os
 import random
 import torch.nn as nn
 
-root = "/data/torchsig-datasets/sig53/"
+root = "/project/def-msteve/torchsig/sig53/"
 train = True
 impaired = False
 class_list = list(Sig53._idx_to_name_dict.values())
@@ -96,7 +96,7 @@ val_dataloader = DataLoader(
 # In the SimCLR paper, the base network f(.) is resnet50. I have a pretrained efficientnet_b4 model which is also convolutional and works on IQ data so I select it
 model = efficientnet_b4(
     pretrained=True,
-    path="/data/torchsig-pretrained-models/sig53/efficientnet_b4_online.pt",
+    path="/project/def-msteve/torchsig-pretrained-models/sig53/efficientnet_b4_online.pt",
 )
 
 # MLP for g(.) in the paper is Linear->ReLU->Linear. I hope this is right

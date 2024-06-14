@@ -4,6 +4,9 @@ from torchsig.datasets import conf
 from typing import List
 import click
 import os
+import psutil
+
+NUM_CPUS = len(psutil.Process().cpu_affinity())
 
 
 def generate(path: str, configs: List[conf.Sig53Config]):
@@ -19,8 +22,8 @@ def generate(path: str, configs: List[conf.Sig53Config]):
         loader = DatasetLoader(
             ds,
             seed=12345678,
-            num_workers=os.cpu_count() // 2,
-            batch_size=os.cpu_count() // 2,
+            num_workers=NUM_CPUS,#os.cpu_count() // 2,
+            batch_size=NUM_CPUS,#os.cpu_count() // 2,
         )
         creator = DatasetCreator(
             ds,
@@ -40,7 +43,11 @@ def generate(path: str, configs: List[conf.Sig53Config]):
     default=False,
     help="Generate impaired dataset. Ignored if --all=True (default)",
 )
-def main(root: str, all: bool, qa: bool, impaired: bool):
+@click.option(
+        "--config-index",
+        help="Generate only the dataset for the given config index",
+)
+def main(root: str, all: bool, qa: bool, impaired: bool, config_index:int):
     if not os.path.isdir(root):
         os.mkdir(root)
 
@@ -64,6 +71,12 @@ def main(root: str, all: bool, qa: bool, impaired: bool):
 
     if impaired:
         generate(root, configs[2:4])
+        return
+
+    if config_index:
+        print("config_index",int(config_index))
+        generate(root, [configs[int(config_index)]])
+        print("done generating")
         return
 
     generate(root, configs[:2])
