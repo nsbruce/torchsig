@@ -3,7 +3,7 @@
 #SBATCH --cpus-per-task=48
 #SBATCH --mem=128G
 #SBATCH --time=8-0:0:0
-#SBATCH --job-name=impared_train
+#SBATCH --job-name=impaired_train
 
 module load StdEnv/2023
 module load python/3.10

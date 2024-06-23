@@ -4,6 +4,7 @@ import torch.nn as nn
 import torch
 from sigenc import SigEnc
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class SigCLR(LightningModule):
     def __init__(self, hidden_dim=53, lr=0.0001, temperature=0.07, weight_decay=1e-4, batch_size=64, max_epochs=500,device='cuda'):
@@ -16,15 +17,14 @@ class SigCLR(LightningModule):
         self.hparams.device=device
         self.similarity = nn.CosineSimilarity(dim=2)
         self.criterion = nn.CrossEntropyLoss(reduction="sum")
-        self.device=device
         
         # Produce Mask to Mask the self when computing the loss
-        self.allN = 2 * batch_size
-        self.mask = torch.ones((self.allN, self.allN), dtype=bool,device=self.device)
-        self.mask = self.mask.fill_diagonal_(0)
-        for i in range(batch_size):
-            self.mask[i, batch_size + i] = 0
-            self.mask[batch_size + i, i] = 0
+        #self.allN = 2 * batch_size
+        #self.mask = torch.ones((self.allN, self.allN), dtype=bool,device=device)
+        #self.mask = self.mask.fill_diagonal_(0)
+        #for i in range(batch_size):
+        #    self.mask[i, batch_size + i] = 0
+        #    self.mask[batch_size + i, i] = 0
     def forward(self, xi, xj):
         zi, zj=self.encoder(xi),self.encoder(xj)
         return zi, zj
@@ -43,14 +43,14 @@ class SigCLR(LightningModule):
 
     def ntXent_loss(self, batch, mode="train"):
         (xi,xj), _ = batch
-        if xi.shape[0]!=self.batch_size: # Recompute the mask
-            self.batch_size=xi.shape[0]
-            self.allN=2*self.batch_size
-            self.mask = torch.ones((self.allN, self.allN), dtype=bool,device=self.device)
-            self.mask = self.mask.fill_diagonal_(0)
-            for i in range(self.batch_size):
-                self.mask[i, self.batch_size + i] = 0
-                self.mask[self.batch_size + i, i] = 0
+        #if xi.shape[0]!=self.batch_size: # Recompute the mask
+        self.batch_size=xi.shape[0]
+        self.allN=2*self.batch_size
+        self.mask = torch.ones((self.allN, self.allN), dtype=bool,device=device)
+        self.mask = self.mask.fill_diagonal_(0)
+        for i in range(self.batch_size):
+            self.mask[i, self.batch_size + i] = 0
+            self.mask[self.batch_size + i, i] = 0
             
         zi,zj = self.forward(xi,xj)
         z = torch.cat((zi, zj), dim=0)
@@ -68,7 +68,7 @@ class SigCLR(LightningModule):
         loss /= self.allN
 
         # Logging loss
-        self.log(mode + "_loss", loss)
+        self.log(mode + "_loss", loss, sync_dist=True, on_step=False, on_epoch=True,prog_bar=True)
 
         return loss
 

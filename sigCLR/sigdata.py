@@ -18,8 +18,8 @@ class SigDataCLR(SignalDataset):
         smpld_tfs = random.sample(self.CLRTs, self.n_views)
         x1=ST.Compose([smpld_tfs[0],ST.ComplexTo2D()])(x)
         x2=ST.Compose([smpld_tfs[1],ST.ComplexTo2D()])(x)
-        #print(f'x1={x1["data"]["samples"]}')
-        return (x1["data"]["samples"].astype(np.float32), x2["data"]["samples"].astype(np.float32)),y
+        #return (x1["data"]["samples"].astype(np.float32), x2["data"]["samples"].astype(np.float32)),y
+        return (x1.astype(np.float32), x2.astype(np.float32)),y
 
     def __len__(self) -> int:
         return len(self.dataset)
