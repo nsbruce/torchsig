@@ -1,3 +1,6 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
-setup()
+setup(
+    name='torchsig',
+    packages=find_packages(include=['torchsig', 'torchsig.*'])
+)
