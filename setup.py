@@ -2,5 +2,32 @@ from setuptools import setup, find_packages
 
 setup(
     name='torchsig',
-    packages=find_packages(include=['torchsig', 'torchsig.*'])
+    description='Signal Processing Machine Learning Toolkit',
+    author='TorchSig Team',
+    python_requires='>=3.8',
+    install_requires=[
+        "torch==2.0.1",
+        "torchvision",
+        "torchmetrics[detection]",
+        "tqdm",
+        "numpy",
+        "scipy",
+        "h5py",
+        "matplotlib",
+        "numba",
+        "ipdb",
+        "PyWavelets",
+        "pandas",
+        "lmdb",
+        "scikit-learn",
+        "gdown",
+        "icecream",
+        "timm==0.5.4",
+        "pytorch_lightning",
+        "sympy",
+        "numba",
+        "click",
+    ],
+    packages=find_packages(include=['torchsig', 'torchsig.*']),
+    version='0.4.1',
 )
