@@ -279,8 +279,11 @@ def efficientnet_b4(
             in_chans=2,
             drop_path_rate=drop_path_rate,
             drop_rate=drop_rate,
+            pretrained=pretrained,
+            pretrained_cfg_overlay=dict(file=path) if pretrained else None
         )
     )
+    # not sure if this if pretrained is needed anymore
     if pretrained:
         mdl.load_state_dict(torch.load(path))
     if num_classes != 53:
