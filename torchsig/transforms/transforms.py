@@ -1398,7 +1398,7 @@ class RandomTimeShift(SignalTransform):
         self.interp_rate = interp_rate
         num_taps = int(taps_per_arm * interp_rate)
         self.taps = (
-            sp.firwin(num_taps, 1.0 / interp_rate, 1.0 / interp_rate / 4.0, scale=True)
+            sp.firwin(num_taps, 1.0 / interp_rate, width=1.0 / interp_rate / 4.0, scale=True)
             * interp_rate
         )
         self.string = (
