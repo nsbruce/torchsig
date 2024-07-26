@@ -48,6 +48,9 @@ class Sig53ImpairedTrainConfig(Sig53Config):
     num_samples: int = 5_300_000
     level: int = 2
 
+@dataclass
+class Sig53SmallerImpairedTrainConfig(Sig53ImpairedTrainConfig):
+    num_samples: int = 530_000
 
 @dataclass
 class Sig53ImpairedTrainQAConfig(Sig53ImpairedTrainConfig):
